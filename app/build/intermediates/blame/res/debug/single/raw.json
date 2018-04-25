@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/res/merged/debug/raw/bang.mp3",
+        "source": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/src/main/res/raw/bang.mp3"
+    },
+    {
+        "merged": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/res/merged/debug/raw/click.mp3",
+        "source": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/src/main/res/raw/click.mp3"
+    }
+]

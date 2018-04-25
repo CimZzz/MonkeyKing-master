@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/libs/cocos2d-android.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="27.0.2"
+        sha1="9f6c9f5ae05ee941b074037d1f64fa75fd7b3690">
+        <dex dex="/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/pre-dexed/debug/cocos2d-android_d832abd3d819ec7dadfc59a31f4a63ccbeec6fa7.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/Users/wangyanxiong/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="27.0.2"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67">
+        <dex dex="/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/pre-dexed/debug/support-v4-19.1.0_4e4cbecca2fe06a371743b1b44d67ed99715e6d3.jar" />
+    </item>
+
+</items>

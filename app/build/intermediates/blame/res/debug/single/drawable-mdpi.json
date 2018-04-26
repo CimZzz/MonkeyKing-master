@@ -1,5 +1,13 @@
 [
     {
+        "merged": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/res/merged/debug/drawable-mdpi/web.png",
+        "source": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/src/main/res/drawable-mdpi/web.png"
+    },
+    {
+        "merged": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/res/merged/debug/drawable-mdpi/userinfo.png",
+        "source": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/src/main/res/drawable-mdpi/userinfo.png"
+    },
+    {
         "merged": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/build/intermediates/res/merged/debug/drawable-mdpi/ic_launcher.png",
         "source": "/Users/wangyanxiong/AndroidStudioProjects/MonkeyKing-master/app/src/main/res/drawable-mdpi/ic_launcher.png"
     }

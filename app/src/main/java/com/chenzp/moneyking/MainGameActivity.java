@@ -1,6 +1,5 @@
 package com.chenzp.moneyking;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -14,7 +13,6 @@ import org.cocos2d.actions.interval.CCAnimate;
 import org.cocos2d.actions.interval.CCBezierTo;
 import org.cocos2d.actions.interval.CCFadeIn;
 import org.cocos2d.actions.interval.CCFadeOut;
-import org.cocos2d.actions.interval.CCIntervalAction;
 import org.cocos2d.actions.interval.CCMoveBy;
 import org.cocos2d.actions.interval.CCMoveTo;
 import org.cocos2d.actions.interval.CCSequence;
@@ -25,12 +23,9 @@ import org.cocos2d.layers.CCLayer;
 import org.cocos2d.layers.CCMultiplexLayer;
 import org.cocos2d.layers.CCScene;
 import org.cocos2d.menus.CCMenu;
-import org.cocos2d.menus.CCMenuItemFont;
-import org.cocos2d.menus.CCMenuItemImage;
 import org.cocos2d.menus.CCMenuItemSprite;
 import org.cocos2d.nodes.CCAnimation;
 import org.cocos2d.nodes.CCDirector;
-import org.cocos2d.nodes.CCLabelAtlas;
 import org.cocos2d.nodes.CCNode;
 import org.cocos2d.nodes.CCSprite;
 import org.cocos2d.nodes.CCSpriteFrame;
@@ -53,6 +48,7 @@ import org.cocos2d.types.ccGridSize;
 import org.cocos2d.utils.CCFormatter;
 
 
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
@@ -65,11 +61,16 @@ import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.chenzp.moneyking.db.DBHelper;
+import com.chenzp.moneyking.model.User;
+
 public class MainGameActivity extends Activity {
 
 	protected CCGLSurfaceView _glSurfaceView;
 	
 	CCScene scene;
+
+	private User user;
 	/**
 	 * �洢������sharedPreference�ı�ʶ
 	 */
@@ -96,7 +97,8 @@ public class MainGameActivity extends Activity {
 		// ���ø�Activity��View
 		_glSurfaceView = new CCGLSurfaceView(this);
 		setContentView(_glSurfaceView);
-		
+
+		user = (User) getIntent().getSerializableExtra("user");
 		
 	
 	}
@@ -114,7 +116,7 @@ public class MainGameActivity extends Activity {
 		
 		CCDirector.sharedDirector().setAnimationInterval(1.0f / 60.0f);
 
-		scene = GameLayer.scene();
+		scene = GameLayer.scene(user,this);
 		
 		CCDirector.sharedDirector().runWithScene(scene);
 	
@@ -157,7 +159,15 @@ public class MainGameActivity extends Activity {
 		return super.onKeyDown(keyCode, event);
 	}
 
-
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == 100) {
+			if(resultCode == 101) {
+				finish();
+				startActivity(new Intent(this,LoginActivity.class));
+			}
+		}
+	}
 
 	/**
 	 * �ڲ��࣬��ʾ��Ϸ������
@@ -191,6 +201,8 @@ public class MainGameActivity extends Activity {
 		private CCMoveBy sharpFall;  // ���Ӻ������½��Ķ���(��ײ��ļ����½���
 		
 		private long firstTime = 0; // ����ʵ�������������˳�
+
+		private User user;
 		
 		/**
 		 * ȫ�ֱ���������layer��������
@@ -216,10 +228,7 @@ public class MainGameActivity extends Activity {
 		/**
 		 * ��ǰActivity
 		 */
-		public final static Context app = CCDirector.sharedDirector().getActivity();;
-		
-		// ���ڴ洢��߷���
-		private SharedPreferences scorePreferences;
+		public static Activity app;
 		
 		/**
 		 * ���һ�κ��������ĸ߶�
@@ -302,8 +311,8 @@ public class MainGameActivity extends Activity {
 		
 		CCParticleSystem emitter;
 		
-		int smallNum = MonkeyUtil.getDataFromShared(LASTSIGN, "SMALLNUM", app);
-		int bigNum = MonkeyUtil.getDataFromShared(LASTSIGN, "BIGNUM", app);
+		int smallNum;
+		int bigNum;
 		
 		/**
 		 * ��ʶ�Ƿ��ڴ���״̬
@@ -314,10 +323,14 @@ public class MainGameActivity extends Activity {
 		 * 
 		 * @return
 		 */
-		public static CCScene scene() {
+		public static CCScene scene(User user,Activity app) {
 			CCScene scene = CCScene.node();
-			CCColorLayer layer = new GameLayer(ccColor4B.ccc4(139, 131, 134,
+			GameLayer.app = app;
+			GameLayer layer = new GameLayer(ccColor4B.ccc4(139, 131, 134,
 					255));
+			layer.user = user;
+			layer.smallNum = MonkeyUtil.getDataFromShared(LASTSIGN, "SMALLNUM", app);
+			layer.bigNum = MonkeyUtil.getDataFromShared(LASTSIGN, "BIGNUM", app);
 			scene.addChild(layer);
 			return scene;
 		}
@@ -339,7 +352,6 @@ public class MainGameActivity extends Activity {
 			// �½�
 			CCMoveBy fallMoveBy = CCMoveBy.action(fallDuration, CGPoint.ccp(0, - WINSIZE.height));
 			fall = CCEaseIn.action(fallMoveBy, 2.0f);
-			scorePreferences = app.getSharedPreferences(SCORETAG, Context.MODE_PRIVATE);
 			sharpFall = CCMoveBy.action(1.0f, CGPoint.ccp(0, -WINSIZE.height));
 			RISE = (int) (60 * WINSIZE.height / WELL_Y);
 
@@ -440,14 +452,19 @@ public class MainGameActivity extends Activity {
 			CCMenuItemSprite toolItem = CCMenuItemSprite.item(toolSprite, toolSprite, this, "toTool");
 			toolItem.setScale(WINSIZE.height / WELL_Y);
 
-			CCSprite webViewSprite = CCSprite.sprite("tool.png",true);
-			toolSprite.setScale(WINSIZE.height / WELL_Y);
+			CCSprite userInfoSprite = CCSprite.sprite(BitmapFactory.decodeResource(app.getResources(),R.drawable.userinfo),"userinfo.png");
+			userInfoSprite.setScale(WINSIZE.height / WELL_Y / 2.5f);
+			CCMenuItemSprite userInfoItem = CCMenuItemSprite.item(userInfoSprite, userInfoSprite, this, "toUserInfo");
+			userInfoItem.setScale(WINSIZE.height / WELL_Y/ 2.5f);
+
+			CCSprite webViewSprite = CCSprite.sprite(BitmapFactory.decodeResource(app.getResources(),R.drawable.web),"web.png");
+			webViewSprite.setScale(WINSIZE.height / WELL_Y / 3);
 			CCMenuItemSprite webViewItem = CCMenuItemSprite.item(webViewSprite, webViewSprite, this, "toWebView");
-			webViewItem.setScale(WINSIZE.height / WELL_Y);
+			webViewItem.setScale(WINSIZE.height / WELL_Y/ 3);
             
 		    
 		    
-		    CCMenu screenMenu = CCMenu.menu(aboutItem,shareItem,exitItem,toolItem,webViewItem);
+		    CCMenu screenMenu = CCMenu.menu(aboutItem,shareItem,exitItem,toolItem,userInfoItem,webViewItem);
 		    screenMenu.alignItemsHorizontally(80 * WINSIZE.width / WELL_X);
 		    screenMenu.setPosition(WINSIZE.width / 2 ,60 * WINSIZE.height / WELL_Y);
 		    addChild(screenMenu,3);
@@ -654,6 +671,12 @@ public class MainGameActivity extends Activity {
 			CCDirector.sharedDirector().replaceScene(CCSlideInBTransition.transition(0.1f, getToolScene()));	
 		}
 
+		public void toUserInfo(Object sender) {
+			Intent intent  = new Intent(app,UserInfoActivity.class);
+			intent.putExtra("user",user);
+			app.startActivityForResult(intent,100);
+		}
+
 		public void toWebView(Object sender) {
 			Log.d("TEST", "toWebView..");
 			app.startActivity(new Intent(app,WebActivity.class));
@@ -816,7 +839,6 @@ public class MainGameActivity extends Activity {
 		
 		/**
 		 * �ص����������ڼ����ײ
-		 * @param sender
 		 */
 		public void check(float dt){
 			// ����Ϸ������ʱ�ż��
@@ -879,16 +901,17 @@ public class MainGameActivity extends Activity {
 					CCBitmapFontAtlas scoreAtlas = (CCBitmapFontAtlas) popSprite.getChildByTag(SCORE);
 					scoreAtlas.setString(CCFormatter.format("%2.1f", time / 10));
 					// ��߷�
-					float best = scorePreferences.getFloat(SCORETAG, 0.0f);
+					float best = user.getScore();
 					
 					// �����߷�С�ڵ�ǰ������������߷�
 					if(best < (time / 10))
 					{
 						best = time / 10;
 						// д�� SharedPreferences
-						SharedPreferences.Editor editor = scorePreferences.edit();
-						editor.putFloat(SCORETAG, best);
-						editor.commit();
+						user.setScore(best);
+						DBHelper helper = new DBHelper(app);
+						helper.updateUser(user);
+						helper.close();
 					}
 					
 					// �޸���߷ֱ�ǩ
@@ -1035,8 +1058,7 @@ public class MainGameActivity extends Activity {
 		}
 		
 		public void toBack(Object sender) {
-			
-			CCDirector.sharedDirector().replaceScene(CCSlideInTTransition.transition(0.1f, GameLayer.scene()));
+			CCDirector.sharedDirector().replaceScene(CCSlideInTTransition.transition(0.1f, GameLayer.scene(user,app)));
 		}
 		
 	}
